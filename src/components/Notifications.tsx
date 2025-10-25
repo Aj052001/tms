@@ -6,6 +6,7 @@ interface OverdueStudent {
   name: string;
   mobile: string;
   seatNumber: number;
+  totalFees : number;
   fees: Array<{
     amount: number;
     date: string;
@@ -24,6 +25,8 @@ export default function Notifications() {
   useEffect(() => {
     fetchOverdueStudents();
   }, []);
+
+  console.log(overdueStudents)
 
   // Refresh when fees are updated elsewhere
   useEffect(() => {
@@ -48,7 +51,14 @@ export default function Notifications() {
       const res = await axios.get("/students/overdue", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setOverdueStudents(res.data);
+      // setOverdueStudents(res.data);
+        const filteredStudents = res.data.filter(student => {
+    const totalPaid = student.fees.reduce((sum, fee) => sum + fee.amount, 0);
+    const remainingFees = student.totalFees - totalPaid;
+    return remainingFees > 0; // ✅ Keep only students with remaining fees
+  });
+
+  setOverdueStudents(filteredStudents);
     } catch (error) {
       console.error("Error fetching overdue students:", error);
       setOverdueStudents([]);
@@ -143,7 +153,7 @@ export default function Notifications() {
               const daysSinceLastFee = lastFee 
                 ? Math.floor((new Date().getTime() - new Date(lastFee.date).getTime()) / (1000 * 60 * 60 * 24))
                 : null;
-
+                
               return (
                 <div key={student._id} style={{
                   ...studentCardStyle,
@@ -192,8 +202,13 @@ export default function Notifications() {
                       <div>
                         <span style={{ fontWeight: "600", color: "#6b7280" }}>Mobile:</span> {student.mobile}
                       </div>
-                      <div>
-                        <span style={{ fontWeight: "600", color: "#6b7280" }}>Total Fees:</span> ₹{student.fees.reduce((sum, fee) => sum + fee.amount, 0)}
+                     
+                       <div>
+                        <span style={{ fontWeight: "600", color: "#6b7280" }}>Total Fees:</span> ₹{student.totalFees}
+                      </div>
+
+                       <div>
+                        <span style={{ fontWeight: "600", color: "#6b7280" }}>Remaining Fees:</span> ₹{student.totalFees - student.fees.reduce((sum, fee) => sum + fee.amount, 0)}
                       </div>
                     </div>
                     

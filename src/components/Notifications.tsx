@@ -52,8 +52,8 @@ export default function Notifications() {
         headers: { Authorization: `Bearer ${token}` },
       });
       // setOverdueStudents(res.data);
-        const filteredStudents = res.data.filter(student => {
-    const totalPaid = student.fees.reduce((sum, fee) => sum + fee.amount, 0);
+        const filteredStudents = res.data.filter((student: any) => {
+    const totalPaid = student.fees.reduce((sum: number, fee: any) => sum + fee.amount, 0);
     const remainingFees = student.totalFees - totalPaid;
     return remainingFees > 0; // ✅ Keep only students with remaining fees
   });
